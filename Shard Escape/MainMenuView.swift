@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MainMenuView: View {
     @State private var showSettings: Bool = false
+    @State private var showShop: Bool = false
     
     var body: some View {
         GeometryReader { geometry in
@@ -24,7 +25,7 @@ struct MainMenuView: View {
                     NavBarView(onSettingsTap: {
                         showSettings = true
                     })
-                    .padding(.top, geometry.safeAreaInsets.top > 0 ? geometry.safeAreaInsets.top : 0150)
+                    .padding(.top, geometry.safeAreaInsets.top > 0 ? geometry.safeAreaInsets.top : 50)
                     
                     // Основной контент меню
                     VStack(spacing: 30) {
@@ -44,7 +45,7 @@ struct MainMenuView: View {
                             
                             // Кнопка магазина
                             Button(action: {
-                                print("Shop button tapped")
+                                showShop = true
                             }) {
                                 Image("shop_button")
                                     .resizable()
@@ -63,6 +64,13 @@ struct MainMenuView: View {
                     SettingsAlertView(isPresented: $showSettings)
                         .transition(.opacity.combined(with: .scale))
                         .animation(.easeInOut(duration: 0.25), value: showSettings)
+                }
+                
+                // Магазин поверх
+                if showShop {
+                    ShopView(isPresented: $showShop)
+                        .transition(.opacity.combined(with: .scale))
+                        .animation(.easeInOut(duration: 0.25), value: showShop)
                 }
             }
         }

@@ -26,14 +26,14 @@ struct SettingsAlertView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(maxWidth: 500)
                 
-                VStack(alignment: .leading, spacing: 1) {
+                VStack(alignment: .leading, spacing: 4) {
                     // Отступ сверху под декоративные элементы панели
                     Spacer().frame(height: 40)
                     
                     SettingsRow(title: "SOUND", value: $soundValue)
                     SettingsRow(title: "MUSIC", value: $musicValue)
                     
-                    Spacer().frame(height: 0)
+                    Spacer().frame(height: 10)
                     
                     // Кнопка Назад
                     Button(action: { isPresented = false }) {
@@ -98,7 +98,7 @@ struct CustomSlider: View {
                 Image("slider_custom")
                     .resizable()
                     .frame(width: knobSize.width, height: knobSize.height)
-                    .offset(x: knobX - (knobSize.width * 0.1), y: -(knobSize.height - barHeight)/10)
+                    .offset(x: knobX - (knobSize.width * 0.1), y: -(knobSize.height - barHeight)/30)
                     .gesture(DragGesture(minimumDistance: 0)
                         .onChanged { g in
                             let clamped = min(max(0, g.location.x / width), 1)
@@ -114,19 +114,5 @@ struct CustomSlider: View {
 #Preview {
     StatefulPreviewWrapper(true) { isShown in
         SettingsAlertView(isPresented: isShown)
-    }
-}
-
-struct StatefulPreviewWrapper<Value, Content>: View where Content: View {
-    @State var value: Value
-    var content: (Binding<Value>) -> Content
-    
-    init(_ value: Value, content: @escaping (Binding<Value>) -> Content) {
-        _value = State(initialValue: value)
-        self.content = content
-    }
-    
-    var body: some View {
-        content($value)
     }
 }
