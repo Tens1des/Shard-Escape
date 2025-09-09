@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct MainMenuView: View {
+    @State private var showSettings: Bool = false
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -20,10 +22,9 @@ struct MainMenuView: View {
                 VStack(spacing: 0) {
                     // Навигационная панель сверху с учетом SafeArea
                     NavBarView(onSettingsTap: {
-                        // Действие для настроек
-                        print("Settings tapped")
+                        showSettings = true
                     })
-                    .padding(.top, geometry.safeAreaInsets.top > 0 ? geometry.safeAreaInsets.top : 100)
+                    .padding(.top, geometry.safeAreaInsets.top > 0 ? geometry.safeAreaInsets.top : 0150)
                     
                     // Основной контент меню
                     VStack(spacing: 30) {
@@ -33,7 +34,6 @@ struct MainMenuView: View {
                         VStack(spacing: 20) {
                             // Кнопка игры
                             Button(action: {
-                                // Действие для начала игры
                                 print("Play button tapped")
                             }) {
                                 Image("play_button")
@@ -44,7 +44,6 @@ struct MainMenuView: View {
                             
                             // Кнопка магазина
                             Button(action: {
-                                // Действие для магазина
                                 print("Shop button tapped")
                             }) {
                                 Image("shop_button")
@@ -57,6 +56,13 @@ struct MainMenuView: View {
                         Spacer()
                     }
                     .padding()
+                }
+                
+                // Алерт настроек поверх
+                if showSettings {
+                    SettingsAlertView(isPresented: $showSettings)
+                        .transition(.opacity.combined(with: .scale))
+                        .animation(.easeInOut(duration: 0.25), value: showSettings)
                 }
             }
         }
