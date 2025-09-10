@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct NavBarView: View {
-    @State private var money: Int = 100
-    @State private var record: Int = 0
+    let money: Int
     let onSettingsTap: () -> Void
     let onPauseTap: () -> Void
     let isMainMenu: Bool
+    let record: Int
     
     var body: some View {
         HStack {
@@ -32,7 +32,7 @@ struct NavBarView: View {
                 
                 Spacer()
                 
-                // Справа ничего, рекорд скрыт в главном меню
+                // Справа ничего, рекорд убран из главного меню
                 Color.clear.frame(width: 40, height: 40).opacity(0)
             } else {
                 // Кнопка паузы слева (игровой экран)
@@ -46,7 +46,7 @@ struct NavBarView: View {
                 Spacer()
                 
                 // Рекорд по центру (игровой экран)
-                Text("RECORD: \(record)")
+                Text("SCORE: \(record)")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
@@ -87,7 +87,7 @@ struct MoneyPanelView: View {
 
 #Preview {
     VStack {
-        NavBarView(onSettingsTap: {}, onPauseTap: {}, isMainMenu: true)
+        NavBarView(money: 0, onSettingsTap: {}, onPauseTap: {}, isMainMenu: true, record: 1000)
         Spacer()
     }
     .background(Color.blue)

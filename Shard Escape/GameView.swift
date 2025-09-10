@@ -1,81 +1,108 @@
-//
-//  GameView.swift
-//  Shard Escape
-//
-//  Created by Рома Котов on 08.09.2025.
-//
-
 import SwiftUI
 import SpriteKit
+import Combine
 
 struct GameView: View {
     @Binding var isGameActive: Bool
     @State private var showTutorial: Bool = true
-    @State private var money: Int = 100
+    @State private var money: Int = 0 // Начинаем с 0
     @State private var record: Int = 0
     @State private var isPaused: Bool = false
     @State private var gameScene: GameScene?
+    @State private var showGameOver: Bool = false
+    @State private var finalScore: Int = 0
     
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Игровая сцена
                 if let scene = gameScene {
                     SKViewRepresentable(scene: scene)
                         .ignoresSafeArea()
                 }
                 
-                // Навигационная панель поверх игры
                 VStack {
                     NavBarView(
-                        onSettingsTap: {
-                            // Действие настроек
-                        },
-                        onPauseTap: {
+                        money: money,
+                        onSettingsTap: {},
+                        onPauseTap: { 
                             isPaused.toggle()
+                            if isPaused {
+                                gameScene?.pauseGame()
+                            } else {
+                                gameScene?.resumeGame()
+                            }
                         },
-                        isMainMenu: false
+                        isMainMenu: false,
+                        record: record
                     )
                     .padding(.top, geometry.safeAreaInsets.top > 0 ? geometry.safeAreaInsets.top : 50)
                     
                     Spacer()
+                    
+                    if !showTutorial && !isPaused {
+                        JoystickView { direction in
+                            gameScene?.movePlayer(direction: direction)
+                        }
+                        .padding(.bottom, 30)
+                    }
                 }
                 
-                // Туториал поверх всего
                 if showTutorial {
                     TutorialView(isPresented: $showTutorial)
-                        .transition(.opacity.combined(with: .scale))
-                        .animation(.easeInOut(duration: 0.25), value: showTutorial)
                 }
                 
-                // Пауза поверх всего
                 if isPaused {
                     PauseAlertView(
                         isPresented: $isPaused,
                         onRestart: {
-                            // Пересоздать сцену
-                            gameScene = GameScene(size: UIScreen.main.bounds.size)
+                            isPaused = false
+                            gameScene?.restartLevel() // Используем мягкий перезапуск уровня
                         },
                         onResume: {
-                            // Просто продолжить
+                            isPaused = false
+                            gameScene?.resumeGame()
                         },
-                        onHome: {
-                            isGameActive = false
+                        onHome: { 
+                            isGameActive = false 
                         }
                     )
-                    .transition(.opacity.combined(with: .scale))
-                    .animation(.easeInOut(duration: 0.25), value: isPaused)
+                }
+                
+                // Экран Game Over
+                if showGameOver {
+                    GameOverView(
+                        score: finalScore,
+                        coinsEarned: 100, // TODO: Передавать реальные монеты
+                        onHome: {
+                            isGameActive = false
+                        },
+                        onRestart: {
+                            showGameOver = false
+                            gameScene?.restartLevel()
+                        }
+                    )
                 }
             }
         }
         .ignoresSafeArea(.container, edges: .top)
         .onAppear {
-            // Создаем сцену с правильным размером
             gameScene = GameScene(size: UIScreen.main.bounds.size)
         }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("ScoreUpdated"))) { notification in
+            if let newScore = notification.object as? Int {
+                record = newScore
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("CoinsUpdated"))) { notification in
+            if let newCoins = notification.object as? Int {
+                money = newCoins
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("GameOver"))) { notification in
+            if let score = notification.object as? Int {
+                finalScore = score
+                showGameOver = true
+            }
+        }
     }
-}
-
-#Preview {
-    GameView(isGameActive: .constant(true))
 }

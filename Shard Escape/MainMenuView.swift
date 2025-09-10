@@ -11,6 +11,8 @@ struct MainMenuView: View {
     @Binding var isGameActive: Bool
     @State private var showSettings: Bool = false
     @State private var showShop: Bool = false
+    @State private var highScore: Int = 0
+    @State private var totalCoins: Int = 0
     
     var body: some View {
         GeometryReader { geometry in
@@ -24,13 +26,15 @@ struct MainMenuView: View {
                 VStack(spacing: 0) {
                     // Навигационная панель сверху с учетом SafeArea
                     NavBarView(
+                        money: totalCoins,
                         onSettingsTap: {
                             showSettings = true
                         },
                         onPauseTap: {
                             // В главном меню пауза не нужна, но параметр обязательный
                         },
-                        isMainMenu: true
+                        isMainMenu: true,
+                        record: highScore
                     )
                     .padding(.top, geometry.safeAreaInsets.top > 0 ? geometry.safeAreaInsets.top : 50)
                     
@@ -82,6 +86,17 @@ struct MainMenuView: View {
             }
         }
         .ignoresSafeArea(.container, edges: .top)
+        .onAppear {
+            loadData()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("CoinsUpdated"))) { _ in
+            loadData() // Перезагружаем данные при обновлении монет
+        }
+    }
+    
+    private func loadData() {
+        highScore = UserDefaults.standard.integer(forKey: "highScore")
+        totalCoins = UserDefaults.standard.integer(forKey: "totalCoins")
     }
 }
 

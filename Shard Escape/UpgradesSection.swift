@@ -8,9 +8,17 @@
 import SwiftUI
 
 struct UpgradesSection: View {
+    @Binding var totalCoins: Int
     @State private var ballSpeedLevel: Int = 0
-    @State private var money: Int = 100
-    let maxLevel: Int = 3
+    
+    private let maxLevel: Int = 5
+    private let baseCost: Int = 100
+    private let baseSpeed: CGFloat = 250.0
+    private let speedIncrement: CGFloat = 50.0
+    
+    private var currentCost: Int {
+        baseCost * (ballSpeedLevel + 1)
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -45,7 +53,7 @@ struct UpgradesSection: View {
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 10, height: 10)
                         
-                        Text("100")
+                        Text(ballSpeedLevel < maxLevel ? "\(currentCost)" : "MAX")
                             .font(.title2)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
@@ -60,7 +68,7 @@ struct UpgradesSection: View {
                             .aspectRatio(contentMode: .fit)
                             .frame(height: 40)
                     }
-                    .disabled(ballSpeedLevel >= maxLevel || money < 100)
+                    .disabled(ballSpeedLevel >= maxLevel || totalCoins < currentCost)
                     
                     // Прогресс квадратики
                     HStack(spacing: 8) {
@@ -76,18 +84,36 @@ struct UpgradesSection: View {
             }
         }
         .padding(.bottom, 0) // Небольшой отступ сверху к навбару
+        .onAppear {
+            loadUpgradeState()
+        }
+    }
+    
+    private func loadUpgradeState() {
+        ballSpeedLevel = UserDefaults.standard.integer(forKey: "ballSpeedLevel")
     }
     
     private func buyUpgrade() {
-        if ballSpeedLevel < maxLevel && money >= 100 {
+        if ballSpeedLevel < maxLevel && totalCoins >= currentCost {
+            totalCoins -= currentCost
             ballSpeedLevel += 1
-            money -= 100
-            print("Ball Speed upgraded to level \(ballSpeedLevel)")
+            
+            // Сохраняем все данные
+            UserDefaults.standard.set(ballSpeedLevel, forKey: "ballSpeedLevel")
+            UserDefaults.standard.set(totalCoins, forKey: "totalCoins")
+            
+            let newSpeed = baseSpeed + (CGFloat(ballSpeedLevel) * speedIncrement)
+            UserDefaults.standard.set(newSpeed, forKey: "playerSpeed")
+            
+            // Уведомляем другие части приложения
+            NotificationCenter.default.post(name: Notification.Name("CoinsUpdated"), object: totalCoins)
+            
+            print("Ball Speed upgraded to level \(ballSpeedLevel). New speed: \(newSpeed)")
         }
     }
 }
 
 #Preview {
-    UpgradesSection()
+    UpgradesSection(totalCoins: .constant(500))
         .background(Color.black)
 }
