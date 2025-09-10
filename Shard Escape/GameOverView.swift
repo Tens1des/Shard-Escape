@@ -22,10 +22,17 @@ struct GameOverView: View {
                     Spacer()
                     
                     // Итоговый счет
-                    Text("\(score)")
-                        .font(.system(size: 70, weight: .bold))
-                        .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.5), radius: 5)
+                    VStack(spacing: 5) {
+                        Text("Score:")
+                            .font(.system(size: 30, weight: .medium))
+                            .foregroundColor(.white)
+                            .shadow(color: .black.opacity(0.5), radius: 3)
+                        
+                        Text("\(score)")
+                            .font(.system(size: 70, weight: .bold))
+                            .foregroundColor(.white)
+                            .shadow(color: .black.opacity(0.5), radius: 5)
+                    }
                     
                     // Заработанные монеты
                     HStack(spacing: 10) {

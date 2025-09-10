@@ -16,7 +16,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, ObservableObject {
     @Published var record: Int = 0
     
     private var lavaNode: SKSpriteNode?
-    private var lavaSpeed: CGFloat = 20.0
+    private var lavaSpeed: CGFloat = 60.0
     private var lastUpdateTime: TimeInterval = 0
     
     private var playerNode: SKSpriteNode?
@@ -24,7 +24,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, ObservableObject {
     private var isGameOver: Bool = false
     private var scoreTimer: Timer?
     private var currentScore: Int = 0
+    private var lastPlayerYPosition: CGFloat = 0
     private var totalCoins: Int = 0
+    private var coinsEarnedInLevel: Int = 0
     
     // Enum для типов шипов
     enum SpikeType: String {
@@ -100,8 +102,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, ObservableObject {
             playerSpeed = CGFloat(savedSpeed)
         }
         
-        player.size = CGSize(width: 40, height: 40)
+        player.size = CGSize(width: 70, height: 70)
         player.position = CGPoint(x: frame.midX, y: 150) // Стартуем чуть выше
+        lastPlayerYPosition = player.position.y
         player.zPosition = 2
         
         // Настройка физического тела
@@ -125,29 +128,36 @@ class GameScene: SKScene, SKPhysicsContactDelegate, ObservableObject {
         createWall(at: CGPoint(x: frame.maxX - wallThickness/2, y: frame.midY), size: CGSize(width: wallThickness, height: frame.height * 2))
         
         // --- Секция 1 ---
-        createWall(at: CGPoint(x: frame.midX, y: 120), size: CGSize(width: 250, height: 20))
+        createWall(at: CGPoint(x: frame.midX, y: 120), size: CGSize(width: 300, height: 20))
         // createHazard(at: CGPoint(x: frame.midX, y: 135), type: .up) // Убраны самые нижние шипы
         
         // --- Секция 2 ---
-        createWall(at: CGPoint(x: frame.midX - 100, y: 300), size: CGSize(width: 200, height: 20))
+        createWall(at: CGPoint(x: frame.midX - 100, y: 300), size: CGSize(width: 250, height: 20))
         createHazard(at: CGPoint(x: frame.midX - 140, y: 340), type: .left, size: CGSize(width: 50, height: 50)) // Изменено
         createCollectible(at: CGPoint(x: frame.midX - 100, y: 330))
         
         // --- Секция 3 ---
-        createWall(at: CGPoint(x: frame.midX + 100, y: 450), size: CGSize(width: 200, height: 20))
+        createWall(at: CGPoint(x: frame.midX + 100, y: 450), size: CGSize(width: 250, height: 20))
         createHazard(at: CGPoint(x: frame.midX + 140, y: 490), type: .right, size: CGSize(width: 50, height: 50)) // Изменено
         
         // --- Секция 4 ---
-        // createWall(at: CGPoint(x: frame.midX, y: 600), size: CGSize(width: 20, height: 250)) // Стена убрана
+        createWall(at: CGPoint(x: frame.midX, y: 600), size: CGSize(width: 20, height: 100))
+        createHazard(at: CGPoint(x: frame.midX - 35, y: 600), type: .right, size: CGSize(width: 50, height: 50))
         
         // --- Секция 5 ---
-        createWall(at: CGPoint(x: frame.midX - 100, y: 750), size: CGSize(width: 150, height: 20))
+        createWall(at: CGPoint(x: frame.midX - 100, y: 750), size: CGSize(width: 200, height: 20))
         createHazard(at: CGPoint(x: frame.midX - 70, y: 785), type: .down, size: CGSize(width: 50, height: 50)) // Изменено
         createCollectible(at: CGPoint(x: frame.midX - 120, y: 780))
         
         // --- Секция 6 ---
-        // createWall(at: CGPoint(x: frame.midX + 80, y: 900), size: CGSize(width: 150, height: 20))
-        //createHazard(at: CGPoint(x: frame.midX + 20, y: 910), type: .right, size: CGSize(width: 50, height: 50)) // Изменено
+        createWall(at: CGPoint(x: frame.midX + 80, y: 900), size: CGSize(width: 150, height: 20))
+        createHazard(at: CGPoint(x: frame.midX + 20, y: 940), type: .left, size: CGSize(width: 50, height: 50))
+        createCollectible(at: CGPoint(x: frame.midX + 80, y: 930))
+        
+        // --- Секция 7 ---
+        createWall(at: CGPoint(x: frame.midX, y: 1050), size: CGSize(width: 300, height: 20))
+        createHazard(at: CGPoint(x: frame.midX - 100, y: 1085), type: .down, size: CGSize(width: 40, height: 40))
+        createHazard(at: CGPoint(x: frame.midX + 100, y: 1085), type: .down, size: CGSize(width: 40, height: 40))
     }
     
     private func createWall(at position: CGPoint, size: CGSize) {
@@ -197,6 +207,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, ObservableObject {
     
     private func addCoins(_ amount: Int) {
         totalCoins += amount
+        coinsEarnedInLevel += amount
         UserDefaults.standard.set(totalCoins, forKey: "totalCoins")
         updateCoinDisplay()
     }
@@ -247,6 +258,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, ObservableObject {
         isGameOver = false
         currentScore = 0
         record = 0
+        coinsEarnedInLevel = 0
         
         // Сбрасываем таймер
         stopScoreTimer()
@@ -263,6 +275,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, ObservableObject {
         
         // Сбрасываем игрока и лаву
         playerNode?.position = CGPoint(x: frame.midX, y: 150)
+        if let player = playerNode {
+            lastPlayerYPosition = player.position.y
+        }
         playerNode?.physicsBody?.velocity = .zero
         lavaNode?.position = CGPoint(x: frame.midX, y: -frame.height * 1)
         
@@ -357,8 +372,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, ObservableObject {
         self.isPaused = true // Останавливаем сцену
         stopScoreTimer()
         
-        // Отправляем уведомление о проигрыше с финальным счетом
-        NotificationCenter.default.post(name: Notification.Name("GameOver"), object: currentScore)
+        // Отправляем уведомление о проигрыше с финальным счетом и монетами
+        let gameOverData = ["score": currentScore, "coins": coinsEarnedInLevel] as [String : Any]
+        NotificationCenter.default.post(name: Notification.Name("GameOver"), object: gameOverData)
     }
     
     func setLavaSpeed(_ speed: CGFloat) {

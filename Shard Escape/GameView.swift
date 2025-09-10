@@ -11,6 +11,7 @@ struct GameView: View {
     @State private var gameScene: GameScene?
     @State private var showGameOver: Bool = false
     @State private var finalScore: Int = 0
+    @State private var coinsEarnedInLevel: Int = 0
     
     var body: some View {
         GeometryReader { geometry in
@@ -72,12 +73,13 @@ struct GameView: View {
                 if showGameOver {
                     GameOverView(
                         score: finalScore,
-                        coinsEarned: 100, // TODO: Передавать реальные монеты
+                        coinsEarned: coinsEarnedInLevel,
                         onHome: {
                             isGameActive = false
                         },
                         onRestart: {
                             showGameOver = false
+                            coinsEarnedInLevel = 0
                             gameScene?.restartLevel()
                         }
                     )
@@ -99,8 +101,11 @@ struct GameView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("GameOver"))) { notification in
-            if let score = notification.object as? Int {
+            if let gameOverData = notification.object as? [String: Any],
+               let score = gameOverData["score"] as? Int,
+               let coins = gameOverData["coins"] as? Int {
                 finalScore = score
+                coinsEarnedInLevel = coins
                 showGameOver = true
             }
         }
