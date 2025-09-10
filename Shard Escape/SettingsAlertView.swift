@@ -53,7 +53,7 @@ struct SettingsAlertView: View {
     }
 }
 
-private struct SettingsRow: View {
+struct SettingsRow: View {
     let title: String
     @Binding var value: Double
     

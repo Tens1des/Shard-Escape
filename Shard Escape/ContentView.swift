@@ -9,8 +9,14 @@ import SwiftUI
 import SpriteKit
 
 struct ContentView: View {
+    @State private var isGameActive = false
+    
     var body: some View {
-        MainMenuView()
+        if isGameActive {
+            GameView(isGameActive: $isGameActive)
+        } else {
+            MainMenuView(isGameActive: $isGameActive)
+        }
     }
 }
 
@@ -22,6 +28,7 @@ struct SKViewRepresentable: UIViewRepresentable {
         let view = SKView()
         view.isMultipleTouchEnabled = true
         view.presentScene(scene)
+        print("SKView created and scene presented")
         return view
     }
     
@@ -38,13 +45,16 @@ struct GameSceneView: View {
         ZStack {
             // Игровая сцена
             SKViewRepresentable(scene: scene)
-                .ignoresSafeArea()
+                .ignoresSafeArea(.all, edges: .all)
             
             // Игровой интерфейс поверх сцены
             VStack {
                 // Здесь будет игровой интерфейс сцены
                 Spacer()
             }
+        }
+        .onAppear {
+            print("GameSceneView appeared")
         }
     }
 }

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct MainMenuView: View {
-    @Binding var isGameActive: Bool
     @State private var showSettings: Bool = false
     @State private var showShop: Bool = false
     
@@ -23,15 +22,9 @@ struct MainMenuView: View {
                 
                 VStack(spacing: 0) {
                     // Навигационная панель сверху с учетом SafeArea
-                    NavBarView(
-                        onSettingsTap: {
-                            showSettings = true
-                        },
-                        onPauseTap: {
-                            // В главном меню пауза не нужна, но параметр обязательный
-                        },
-                        isMainMenu: true
-                    )
+                    NavBarView(onSettingsTap: {
+                        showSettings = true
+                    })
                     .padding(.top, geometry.safeAreaInsets.top > 0 ? geometry.safeAreaInsets.top : 50)
                     
                     // Основной контент меню
@@ -42,7 +35,7 @@ struct MainMenuView: View {
                         VStack(spacing: 20) {
                             // Кнопка игры
                             Button(action: {
-                                isGameActive = true
+                                print("Play button tapped")
                             }) {
                                 Image("play_button")
                                     .resizable()
@@ -86,5 +79,5 @@ struct MainMenuView: View {
 }
 
 #Preview {
-    MainMenuView(isGameActive: .constant(false))
+    MainMenuView()
 }

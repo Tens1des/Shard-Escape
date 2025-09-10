@@ -9,24 +9,36 @@ import SpriteKit
 import GameplayKit
 
 class GameScene: SKScene, ObservableObject {
+    @Published var money: Int = 100
+    @Published var record: Int = 0
     
-    override func didMove(to view: SKView) {
+    override init(size: CGSize) {
+        super.init(size: size)
+        print("GameScene init with size: \(size)")
         setupScene()
     }
     
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        setupScene()
+    }
+    
+    override func didMove(to view: SKView) {
+        print("GameScene didMove to view")
+        // Дополнительная настройка при добавлении на view
+    }
+    
     private func setupScene() {
-        // Устанавливаем цвет фона
-        backgroundColor = SKColor.black
+        print("Setting up GameScene")
         
-        // Создаём текст "Hello!"
-        let helloLabel = SKLabelNode(fontNamed: "Arial-BoldMT")
-        helloLabel.text = "Hello!"
-        helloLabel.fontSize = 48
-        helloLabel.fontColor = SKColor.white
-        helloLabel.position = CGPoint(x: frame.midX, y: frame.midY)
-        helloLabel.zPosition = 1
+        // Устанавливаем фон игры
+        let background = SKSpriteNode(imageNamed: "game_bg")
+        background.position = CGPoint(x: frame.midX, y: frame.midY)
+        background.size = frame.size
+        background.zPosition = -1
+        addChild(background)
+        print("Background added to scene")
         
-        addChild(helloLabel)
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
