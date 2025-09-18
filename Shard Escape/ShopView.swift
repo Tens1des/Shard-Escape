@@ -31,6 +31,10 @@ struct ShopView: View {
             
             // Навигационная панель с учетом SafeArea
             VStack(spacing: 0) {
+                // Масштаб интерфейса под маленькие устройства
+                let deviceWidth = UIScreen.main.bounds.width
+                let baseWidth: CGFloat = 390 // iPhone 14 базовая ширина
+                let scale: CGFloat = min(1.0, max(0.78, deviceWidth / baseWidth))
                 ShopNavBarView(
                     money: totalCoins,
                     onHomeTap: {
@@ -40,14 +44,14 @@ struct ShopView: View {
                 .padding(.top, 1) // Небольшой отступ от SafeArea
                 
                 // Секция улучшений под навбаром - теперь ближе
-                UpgradesSection(totalCoins: $totalCoins)
-                    .padding(.horizontal, 10)
-                    .padding(.top, 5) // Минимальный отступ сверху
+                UpgradesSection(totalCoins: $totalCoins, scale: scale)
+                    .padding(.horizontal, 8 * scale)
+                    .padding(.top, 4 * scale) // Минимальный отступ сверху
                 
                 // Секция скинов
-                SkinsSection(totalCoins: $totalCoins)
-                    .padding(.horizontal, 10)
-                    .padding(.top, 20)
+                SkinsSection(totalCoins: $totalCoins, scale: scale)
+                    .padding(.horizontal, 8 * scale)
+                    .padding(.top, 10 * scale)
                 
                 Spacer()
             }
@@ -67,30 +71,27 @@ struct SkinsSection: View {
     @Binding var totalCoins: Int
     @State private var skins: [SkinData] = []
     @State private var selectedSkinID: Int = 0
+    let scale: CGFloat
     
     var body: some View {
-        VStack(spacing: 15) {
-            // Заголовок SKINS
-            Text("SKINS")
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
-                .shadow(radius: 2)
+        VStack(spacing: 10 * scale) {
             
             // Горизонтальный скролл скинов
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 15) {
+                HStack(spacing: 12 * scale) {
                     ForEach($skins) { $skin in
                         SkinCard(
                             skin: $skin,
                             isSelected: skin.id == selectedSkinID,
+                            scale: scale,
                             onTap: {
                                 handleTap(on: skin)
                             }
                         )
                     }
                 }
-                .padding(.horizontal, 20)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.horizontal, 10 * scale)
             }
         }
         .onAppear {
@@ -163,24 +164,25 @@ struct SkinsSection: View {
 struct SkinCard: View {
     @Binding var skin: SkinData
     let isSelected: Bool
+    let scale: CGFloat
     let onTap: () -> Void
     
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8 * scale) {
             // Панель скина
             ZStack {
                 Image("skin_panel")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 120, height: 160)
+                    .frame(width: 120 * scale, height: 140 * scale)
                 
-                VStack(spacing: 6) {
+                VStack(spacing: 6 * scale) {
                     // Иконка скина
                     Image(skin.icon)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 60, height: 60)
-                        .padding(.top, 20)
+                        .frame(width: 60 * scale, height: 60 * scale)
+                        .padding(.top, 18 * scale)
                     
                    // Spacer()
                     
@@ -189,10 +191,10 @@ struct SkinCard: View {
                         Image("coin_icon")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 12, height: 12)
+                            .frame(width: 12 * scale, height: 12 * scale)
                         
                         Text("\(skin.price)")
-                            .font(.title3)
+                            .font(.system(size: 16 * scale, weight: .bold))
                             .fontWeight(.bold)
                             .foregroundColor(.white)
                     }
@@ -203,24 +205,24 @@ struct SkinCard: View {
                             Image("buy_button")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(height: 35)
+                                .frame(height: 32 * scale)
                         } else if isSelected {
                             Image("inUse_button")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(width: 80, height: 35) // Уменьшаем ширину
+                                .frame(width: 80 * scale, height: 32 * scale)
                         } else {
                             Image("use_button")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(width: 80, height: 35) // Уменьшаем ширину
+                                .frame(width: 80 * scale, height: 32 * scale)
                         }
                     }
-                    .padding(.bottom, 15)
+                    .padding(.bottom, 12 * scale)
                 }
             }
         }
-        .scaleEffect(isSelected ? 1.05 : 1.0)
+        .scaleEffect(isSelected ? min(1.05, 1.0 + 0.05 * scale) : 1.0)
         .animation(.easeInOut(duration: 0.2), value: isSelected)
     }
 }

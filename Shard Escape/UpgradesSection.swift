@@ -10,6 +10,7 @@ import SwiftUI
 struct UpgradesSection: View {
     @Binding var totalCoins: Int
     @State private var ballSpeedLevel: Int = 0
+    let scale: CGFloat
     
     private let maxLevel: Int = 5
     private let baseCost: Int = 100
@@ -26,35 +27,35 @@ struct UpgradesSection: View {
             Image("upgrades_label")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(height: 40)
-                .padding(.bottom, 10)
+                .frame(height: 34 * scale)
+                .padding(.bottom, 8 * scale)
             
             // Панель улучшения
             ZStack {
                 Image("upgrade_panel")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: 200)
+                    .frame(maxWidth: 200 * scale)
                 
-                VStack(spacing: 20) {
+                VStack(spacing: 30 * scale) {
                    
                     
                     // Иконка мяча
                     Image("ballUp_icon")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 80, height: 80)
-                        .padding(.vertical, 10)
+                        .frame(width: 64 * scale, height: 64 * scale)
+                        .padding(.vertical, 8 * scale)
                     
                     // Цена
                     HStack {
                         Image("coin_icon")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 10, height: 10)
+                            .frame(width: 10 * scale, height: 10 * scale)
                         
                         Text(ballSpeedLevel < maxLevel ? "\(currentCost)" : "MAX")
-                            .font(.title2)
+                            .font(.system(size: 18 * scale, weight: .bold))
                             .fontWeight(.bold)
                             .foregroundColor(.white)
                     }
@@ -66,20 +67,20 @@ struct UpgradesSection: View {
                         Image("buy_button")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(height: 40)
+                            .frame(height: 34 * scale)
                     }
                     .disabled(ballSpeedLevel >= maxLevel || totalCoins < currentCost)
                     
                     // Прогресс квадратики
-                    HStack(spacing: 8) {
+                    HStack(spacing: 6 * scale) {
                         ForEach(0..<maxLevel, id: \.self) { index in
                             Image(ballSpeedLevel > index ? "orangUp_square" : "grayUp_square")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(width: 30, height: 30)
+                                .frame(width: 24 * scale, height: 24 * scale)
                         }
                     }
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 14 * scale)
                 }
             }
         }
@@ -113,7 +114,8 @@ struct UpgradesSection: View {
     }
 }
 
-#Preview {
+/*#Preview {
     UpgradesSection(totalCoins: .constant(500))
         .background(Color.black)
-}
+}*/
+ 
