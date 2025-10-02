@@ -22,36 +22,40 @@ struct JoystickView: View {
                 .aspectRatio(contentMode: .fit)
                 .frame(width: thumbRadius * 2, height: thumbRadius * 2)
                 .offset(dragOffset)
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { value in
-                            isDragging = true
-                            let distance = sqrt(value.translation.width * value.translation.width + value.translation.height * value.translation.height)
-                            let limitedDistance = min(distance, maxDistance)
-                            
-                            if distance > 0 {
-                                let angle = atan2(value.translation.height, value.translation.width)
-                                dragOffset = CGSize(
-                                    width: cos(angle) * limitedDistance,
-                                    height: sin(angle) * limitedDistance
-                                )
-                            } else {
-                                dragOffset = .zero
-                            }
-                            
-                            let normalizedX = dragOffset.width / maxDistance
-                            let normalizedY = -dragOffset.height / maxDistance
-                            onDirectionChange(CGPoint(x: normalizedX, y: normalizedY))
-                        }
-                        .onEnded { _ in
-                            isDragging = false
-                            withAnimation(.easeOut(duration: 0.2)) {
-                                dragOffset = .zero
-                            }
-                            onDirectionChange(CGPoint.zero)
-                        }
-                )
         }
+        .frame(width: joystickRadius * 2 + 80, height: joystickRadius * 2 + 80) // Увеличиваем зону касания
+        .contentShape(Rectangle())
+        .highPriorityGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    isDragging = true
+                    // Переводим глобальный драг в локальные координаты центра
+                    let translation = value.translation
+                    let distance = sqrt(translation.width * translation.width + translation.height * translation.height)
+                    let limitedDistance = min(distance, maxDistance)
+                    
+                    if distance > 0 {
+                        let angle = atan2(translation.height, translation.width)
+                        dragOffset = CGSize(
+                            width: cos(angle) * limitedDistance,
+                            height: sin(angle) * limitedDistance
+                        )
+                    } else {
+                        dragOffset = .zero
+                    }
+                    
+                    let normalizedX = dragOffset.width / maxDistance
+                    let normalizedY = -dragOffset.height / maxDistance
+                    onDirectionChange(CGPoint(x: normalizedX, y: normalizedY))
+                }
+                .onEnded { _ in
+                    isDragging = false
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        dragOffset = .zero
+                    }
+                    onDirectionChange(CGPoint.zero)
+                }
+        )
         .opacity(isDragging ? 0.8 : 1.0)
     }
 }
